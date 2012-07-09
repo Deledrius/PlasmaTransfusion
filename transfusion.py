@@ -95,30 +95,29 @@ def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersi
         return False
     else:
         try:
-            oldSeqPrefix = age.seqPrefix
-            if newSeqPrefix == None:
-                newSeqPrefix = oldSeqPrefix
-
             print("Processing {0}".format(age.name))
 
-            ## Flip through pages and update to new location
-            locs = plResMgr.getLocations()
-            for pageLoc in locs:
-                print("Changing page prefix for {0} (SeqPrefix: {1} --> {2})".format(pageLoc.page, oldSeqPrefix, newSeqPrefix))
-                newPageLoc = updateLocation(pageLoc, newSeqPrefix)
-                plResMgr.ChangeLocation(pageLoc, newPageLoc)            
+            ## Flip through pages and update to new location, if needed
+            if newSeqPrefix != None:
+                locs = plResMgr.getLocations()
+                for pageLoc in locs:
+                    print("Changing page prefix for {0} (SeqPrefix: {1} --> {2})".format(pageLoc.page, age.seqPrefix, newSeqPrefix))
+                    newPageLoc = updateLocation(pageLoc, newSeqPrefix)
+                    plResMgr.ChangeLocation(pageLoc, newPageLoc)
+            else:
+                newSeqPrefix = age.seqPrefix
 
             ## Filter unsupported objects or objects which require conversion
             plResMgr.setVer(newPlasmaVersion, True)
             print("Converting to version: {0}".format(versionNames[plResMgr.getVer()]))
             locs = plResMgr.getLocations()
             for pageLoc in locs:
+                pageInfo = plResMgr.FindPage(pageLoc)
                 plResMgr.setVer(newPlasmaVersion, True)
-                print("Processing page {0}".format(pageLoc.page))
+                print("Processing page {0}: {1}".format(pageLoc.page, pageInfo.page))
                 for objectType in unsupportedTypeList[plResMgr.getVer()]:
                     print(" - Removing unsupported objects (type: {0})".format(PyHSPlasma.plFactory.ClassName(objectType)))
                     removeUnsupportedObjects(plResMgr, objectType, pageLoc)
-                pageInfo = plResMgr.FindPage(pageLoc)
                 pageInfo.age = newAgeName
 
                 ## Write page
