@@ -50,7 +50,7 @@ versionNames = {
 unsupportedTypeList = {
     PyHSPlasma.pvMoul: [
         #PyHSPlasma.plFactory.kGenericPhysical,
-        PyHSPlasma.plFactory.kPythonFileMod,
+        #PyHSPlasma.plFactory.kPythonFileMod,
         ]
 }
 
