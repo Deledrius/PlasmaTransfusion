@@ -74,7 +74,7 @@ class PlasmaTransfusionGUI(QtGui.QMainWindow, ui_PlasmaTransfusionGUI.Ui_PlasmaT
              newSequencePrefix = None
          version = self.findKeyFromValue(transfusion.versionNames,self.cbVersion.currentText())
 
-         if newAgeName == "":
+         if not newAgeName:
             newAgeName = oldAgeName
          transfusion.doConvert(oldAgeName, inputDir, newAgeName, outputDir, newSequencePrefix, version)
 
@@ -115,3 +115,4 @@ if __name__=='__main__':
     plasmaTransfusionGUI = PlasmaTransfusionGUI()
     plasmaTransfusionGUI.main()
     app.exec_()
+
