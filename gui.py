@@ -17,20 +17,19 @@
 
 
 import sys
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui, QtCore, uic
 import ConfigParser
 import logging
 
 import transfusion
-import ui_PlasmaTransfusionGUI
 
-class PlasmaTransfusionGUI(QtGui.QMainWindow, ui_PlasmaTransfusionGUI.Ui_PlasmaTransfusionGUI):
+class PlasmaTransfusionGUI(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
         super(PlasmaTransfusionGUI, self).__init__(parent)
         logging.basicConfig(filename='PlasmaTransfusion.log', level=logging.INFO)
         logging.info("starting")
-        self.setupUi(self)
+        uic.loadUi("PlasmaTransfusionGUI.ui",self)
         self.connectEvents()
         self.fillComboBoxVersions()
         self.readSettings()
@@ -41,10 +40,10 @@ class PlasmaTransfusionGUI(QtGui.QMainWindow, ui_PlasmaTransfusionGUI.Ui_PlasmaT
          self.btnConvertAge.clicked.connect(self.convertAge)
 
     def fillComboBoxVersions(self):
-        userVersionNames = transfusion.versionNames
-        del userVersionNames[0]  #represents "Unknown"
+        userVersionNames = transfusion.versionNames.values()
+        userVersionNames.remove("Unknown")
         self.cbVersion.clear()
-        self.cbVersion.addItems(list(userVersionNames.values()))
+        self.cbVersion.addItems(list(userVersionNames))
 
     def openAgeFile(self):
          ageFileName = str(QtGui.QFileDialog.getOpenFileName(self, "Open Age File", "","Age Files(*.age)"))

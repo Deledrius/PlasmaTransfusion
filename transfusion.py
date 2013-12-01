@@ -157,8 +157,8 @@ def main():
     DefaultPath = "."
 
     ## Define Options
-    del versionNames[0]  #represents "Unknown"
     userVersionNames = versionNames.values()
+    userVersionNames.remove("Unknown")
 
     parser = argparse.ArgumentParser(description='A Utility for converting Plasma Ages.')
     parser.add_argument("-q", "--quiet", dest="verbose", default=True, action="store_false", help="Don't print status messages")
