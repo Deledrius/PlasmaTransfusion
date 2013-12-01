@@ -29,6 +29,7 @@
 import os
 import sys
 import argparse
+import logging
 
 try:
     import PyHSPlasma
@@ -77,6 +78,8 @@ def removeUnsupportedObjects(plResMgr, objectType, pageLocation):
         plResMgr.DelObject(key)
 
 def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersion):
+    logging.basicConfig(level=logging.INFO)
+
     ## Create our Resource Manager
     plResMgr = PyHSPlasma.plResManager()
 
@@ -84,24 +87,24 @@ def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersi
     fullpath = os.path.abspath(ageFile)
 
     try:
-        print("Loading '{0}'...".format(ageFile))
+        logging.info("Loading '{0}'...".format(ageFile))
         age = plResMgr.ReadAge(fullpath, True)
-        print("Age version: {0}".format(versionNames[plResMgr.getVer()]))
+        logging.info("Age version: {0}".format(versionNames[plResMgr.getVer()]))
     except IOError as e:
-        print("Warning - Unable to read Age: {0}".format(ageFile))
+        logging.warning("Warning - Unable to read Age: {0}".format(ageFile))
         return False
     except KeyboardInterrupt:
-        print("Interrupt detected. Aborting.")
+        logging.error("Interrupt detected. Aborting.")
         return False
     else:
         try:
-            print("Processing {0}".format(age.name))
+            logging.info("Processing {0}".format(age.name))
 
             ## Flip through pages and update to new location, if needed
             if newSeqPrefix != None:
                 locs = plResMgr.getLocations()
                 for pageLoc in locs:
-                    print("Changing page prefix for {0} (SeqPrefix: {1} --> {2})".format(pageLoc.page, age.seqPrefix, newSeqPrefix))
+                    logging.info("Changing page prefix for {0} (SeqPrefix: {1} --> {2})".format(pageLoc.page, age.seqPrefix, newSeqPrefix))
                     newPageLoc = updateLocation(pageLoc, newSeqPrefix)
                     plResMgr.ChangeLocation(pageLoc, newPageLoc)
             else:
@@ -109,14 +112,14 @@ def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersi
 
             ## Filter unsupported objects or objects which require conversion
             plResMgr.setVer(newPlasmaVersion, True)
-            print("Converting to version: {0}".format(versionNames[plResMgr.getVer()]))
+            logging.info("Converting to version: {0}".format(versionNames[plResMgr.getVer()]))
             locs = plResMgr.getLocations()
             for pageLoc in locs:
                 pageInfo = plResMgr.FindPage(pageLoc)
                 plResMgr.setVer(newPlasmaVersion, True)
-                print("Processing page {0}: {1}".format(pageLoc.page, pageInfo.page))
+                logging.info("Processing page {0}: {1}".format(pageLoc.page, pageInfo.page))
                 for objectType in unsupportedTypeList[plResMgr.getVer()]:
-                    print(" - Removing unsupported objects (type: {0})".format(PyHSPlasma.plFactory.ClassName(objectType)))
+                    logging.warning(" - Removing unsupported objects (type: {0})".format(PyHSPlasma.plFactory.ClassName(objectType)))
                     removeUnsupportedObjects(plResMgr, objectType, pageLoc)
                 pageInfo.age = newAgeName
 
@@ -131,20 +134,20 @@ def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersi
             age.writeToFile(ageOut, newPlasmaVersion)
 
         except MemoryError as e:
-            print("Fatal Error - Unable to process Age ({0}) - {1}".format(age.name, e))
+            logging.error("Fatal Error - Unable to process Age ({0}) - {1}".format(age.name, e))
             return False
         except KeyboardInterrupt:
-            print("Interrupt detected. Aborting.")
+            logging.error("Interrupt detected. Aborting.")
             return False
         except Exception as e:
-            print("** Unhandled exception: {0}".format(e))
+            logging.error("** Unhandled exception: {0}".format(e))
             return False
 
         plResMgr.UnloadAge(age.name)
 
 def main():
     if not libPlasma:
-        print("Error - Required module PyHSPlasma cannot be found.")
+        logging.error("Error - Required module PyHSPlasma cannot be found.")
         return False
 
     ## Only display Errors
@@ -180,13 +183,13 @@ def main():
     if args.ageName:
         ageName = args.ageName
     else:
-        print("Error - Transfusion requires an input file for conversion!")
+        logging.error("Error - Transfusion requires an input file for conversion!")
         return False
 
     if args.newAgeName:
         newAgeName = args.newAgeName
     else:
-        print("No output name specified.  Using {} for converted Age.".format(ageName))
+        logging.error("No output name specified.  Using {} for converted Age.".format(ageName))
         newAgeName = ageName
 
     ## Other Options
@@ -195,7 +198,7 @@ def main():
     if args.newPlasmaVersion.lower() in [name.lower() for name in versionNames.values()]:
         newPlasmaVersion = [k for k, v in versionNames.items() if args.newPlasmaVersion.lower() == v.lower()][0]
     else:
-        print("Requested Plasma Version '{}' not recognized.  Defaulting to 'MOUL' for output.".format(newPlasmaVersion))
+        logging.warning("Requested Plasma Version '{}' not recognized.  Defaulting to 'MOUL' for output.".format(newPlasmaVersion))
         newPlasmaVersion = versionNames[PyHSPlasma.pvMoul]
 
     ## Sanitize Agenames
@@ -206,11 +209,11 @@ def main():
 
     ## Check for existing files
     if not os.path.exists(os.path.join(indir, "{}.age".format(ageName))):
-        print("Error - Input Age '{}' cannot be found.".format(os.path.join(indir, "{}.age".format(ageName))))
+        logging.error("Error - Input Age '{}' cannot be found.".format(os.path.join(indir, "{}.age".format(ageName))))
         return False
 
     if os.path.exists(os.path.join(outdir, "{}.age".format(newAgeName))):
-        print("Output Age '{}' already exists.  It will be overwritten.".format(os.path.join(outdir, "{}.age".format(newAgeName))))
+        logging.warning("Output Age '{}' already exists.  It will be overwritten.".format(os.path.join(outdir, "{}.age".format(newAgeName))))
 
     ## Do the work!
     doConvert(ageName + ".age", indir, newAgeName, outdir, newSeqPrefix, newPlasmaVersion)
