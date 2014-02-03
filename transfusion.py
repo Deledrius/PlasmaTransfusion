@@ -34,9 +34,8 @@ import logging
 try:
     import PyHSPlasma
 except ImportError as e:
-    libPlasma = False
-else:
-    libPlasma = True
+    logging.error("Error - Required module PyHSPlasma cannot be found.")
+    sys.exit(1)
 
 versionNames = {
     PyHSPlasma.pvEoa: "EoA",
@@ -48,21 +47,7 @@ versionNames = {
     PyHSPlasma.pvUnknown: "Unknown",
     }
 
-unsupportedTypeList = {
-    PyHSPlasma.pvMoul: [
-        #PyHSPlasma.plFactory.kGenericPhysical,
-        #PyHSPlasma.plFactory.kPythonFileMod,
-        ]
-}
-
-def hsKeyedObject_Create(hsKeyedObject_type):
-    if hsKeyedObject_type == PyHSPlasma.plFactory.kMipmap:
-        return PyHSPlasma.plMipmap()
-    elif hsKeyedObject_type == PyHSPlasma.plFactory.kCubicEnvironmap:
-        return PyHSPlasma.plCreatableStub(hsKeyedObject_type, 0)
-        #return PyHSPlasma.plCubicEnvironmap()
-    else:
-        return PyHSPlasma.plCreatableStub(hsKeyedObject_type, 0)
+unsupportedTypeList = {}
 
 def updateLocation(pageLoc, newSequencePrefix):    
     newPageLoc = PyHSPlasma.plLocation(pageLoc.version)
@@ -118,9 +103,11 @@ def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersi
                 pageInfo = plResMgr.FindPage(pageLoc)
                 plResMgr.setVer(newPlasmaVersion, True)
                 logging.info("Processing page {0}: {1}".format(pageLoc.page, pageInfo.page))
-                for objectType in unsupportedTypeList[plResMgr.getVer()]:
-                    logging.warning(" - Removing unsupported objects (type: {0})".format(PyHSPlasma.plFactory.ClassName(objectType)))
-                    removeUnsupportedObjects(plResMgr, objectType, pageLoc)
+
+                if plResMgr.getVer() in unsupportedTypeList:
+                    for objectType in unsupportedTypeList[plResMgr.getVer()]:
+                        logging.warning(" - Removing unsupported objects (type: {0})".format(PyHSPlasma.plFactory.ClassName(objectType)))
+                        removeUnsupportedObjects(plResMgr, objectType, pageLoc)
                 pageInfo.age = newAgeName
 
                 ## Write page
@@ -146,9 +133,6 @@ def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersi
         plResMgr.UnloadAge(age.name)
 
 def main():
-    if not libPlasma:
-        logging.error("Error - Required module PyHSPlasma cannot be found.")
-        return False
 
     ## Only display Errors
     PyHSPlasma.plDebug.Init(PyHSPlasma.plDebug.kDLError)
