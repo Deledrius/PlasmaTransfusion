@@ -34,7 +34,7 @@ import logging
 try:
     import PyHSPlasma
 except ImportError as e:
-    logging.error("Error - Required module PyHSPlasma cannot be found.")
+    logging.critical("Required module PyHSPlasma cannot be found.")
     sys.exit(1)
 
 versionNames = {
@@ -63,8 +63,6 @@ def removeUnsupportedObjects(plResMgr, objectType, pageLocation):
         plResMgr.DelObject(key)
 
 def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersion):
-    logging.basicConfig(level=logging.INFO)
-
     ## Create our Resource Manager
     plResMgr = PyHSPlasma.plResManager()
 
@@ -76,10 +74,10 @@ def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersi
         age = plResMgr.ReadAge(fullpath, True)
         logging.info("Age version: {0}".format(versionNames[plResMgr.getVer()]))
     except IOError as e:
-        logging.warning("Warning - Unable to read Age: {0}".format(ageFile))
+        logging.critical("Unable to read Age: {0}".format(ageFile))
         return False
     except KeyboardInterrupt:
-        logging.error("Interrupt detected. Aborting.")
+        logging.critical("Interrupt detected. Aborting.")
         return False
     else:
         try:
@@ -106,7 +104,7 @@ def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersi
 
                 if plResMgr.getVer() in unsupportedTypeList:
                     for objectType in unsupportedTypeList[plResMgr.getVer()]:
-                        logging.warning(" - Removing unsupported objects (type: {0})".format(PyHSPlasma.plFactory.ClassName(objectType)))
+                        logging.info("Removing unsupported objects (type: {0})".format(PyHSPlasma.plFactory.ClassName(objectType)))
                         removeUnsupportedObjects(plResMgr, objectType, pageLoc)
                 pageInfo.age = newAgeName
 
@@ -121,18 +119,19 @@ def doConvert(ageName, inpath, newAgeName, outpath, newSeqPrefix, newPlasmaVersi
             age.writeToFile(ageOut, newPlasmaVersion)
 
         except MemoryError as e:
-            logging.error("Fatal Error - Unable to process Age ({0}) - {1}".format(age.name, e))
+            logging.critical("Unable to process Age ({0}) - {1}".format(age.name, e))
             return False
         except KeyboardInterrupt:
-            logging.error("Interrupt detected. Aborting.")
+            logging.critical("Interrupt detected. Aborting.")
             return False
         except Exception as e:
-            logging.error("** Unhandled exception: {0}".format(e))
+            logging.critical("Unhandled exception: {0}".format(e))
             return False
 
         plResMgr.UnloadAge(age.name)
 
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     ## Only display Errors
     PyHSPlasma.plDebug.Init(PyHSPlasma.plDebug.kDLError)
@@ -167,13 +166,13 @@ def main():
     if args.ageName:
         ageName = args.ageName
     else:
-        logging.error("Error - Transfusion requires an input file for conversion!")
+        logging.error("Transfusion requires an input file for conversion!")
         return False
 
     if args.newAgeName:
         newAgeName = args.newAgeName
     else:
-        logging.error("No output name specified.  Using {} for converted Age.".format(ageName))
+        logging.warning("No output name specified.  Using {} for converted Age.".format(ageName))
         newAgeName = ageName
 
     ## Other Options
@@ -193,7 +192,7 @@ def main():
 
     ## Check for existing files
     if not os.path.exists(os.path.join(indir, "{}.age".format(ageName))):
-        logging.error("Error - Input Age '{}' cannot be found.".format(os.path.join(indir, "{}.age".format(ageName))))
+        logging.error("Input Age '{}' cannot be found.".format(os.path.join(indir, "{}.age".format(ageName))))
         return False
 
     if os.path.exists(os.path.join(outdir, "{}.age".format(newAgeName))):
