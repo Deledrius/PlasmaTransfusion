@@ -140,7 +140,7 @@ def main():
     DefaultPath = "."
 
     ## Define Options
-    userVersionNames = versionNames.values()
+    userVersionNames = list(versionNames.values())
     userVersionNames.remove("Unknown")
 
     parser = argparse.ArgumentParser(description='A Utility for converting Plasma Ages.')
@@ -166,7 +166,7 @@ def main():
     if args.ageName:
         ageName = args.ageName
     else:
-        logging.error("Transfusion requires an input file for conversion!")
+        logging.error("Transfusion requires an input age name for conversion!")
         return False
 
     if args.newAgeName:
