@@ -20,7 +20,8 @@ bindings as well (by using `-DDISABLE_PYTHON=OFF` in your cmake command).
 Place **transfusion.py** in your path or cwd and you're ready to begin.  
 Due to being a pre-requisite for libHSPlasma, this guide assumes you also 
 have a working [Python interpreter] [3] installed.  
-Python 3.x is recommended but Python 2.7 is currently supported.
+Python 3.x is recommended but Python 2.7 is currently supported.  The GUI
+application requires PyQt5.
 
 ### Linux
 

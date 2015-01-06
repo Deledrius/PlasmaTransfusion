@@ -17,13 +17,14 @@
 
 
 import sys
-from PyQt4 import QtGui, QtCore, uic
-import ConfigParser
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
+from PyQt5 import uic
+import configparser
 import logging
 
 import transfusion
 
-class PlasmaTransfusionGUI(QtGui.QMainWindow):
+class PlasmaTransfusionGUI(QMainWindow):
 
     def __init__(self, parent=None):
         super(PlasmaTransfusionGUI, self).__init__(parent)
@@ -40,24 +41,24 @@ class PlasmaTransfusionGUI(QtGui.QMainWindow):
          self.btnConvertAge.clicked.connect(self.convertAge)
 
     def fillComboBoxVersions(self):
-        userVersionNames = transfusion.versionNames.values()
+        userVersionNames = list(transfusion.versionNames.values())
         userVersionNames.remove("Unknown")
         self.cbVersion.clear()
         self.cbVersion.addItems(list(userVersionNames))
 
     def openAgeFile(self):
-         ageFileName = str(QtGui.QFileDialog.getOpenFileName(self, "Open Age File", "","Age Files(*.age)"))
-         inputDir = ageFileName.rpartition("/")[0]
+         ageFileName = QFileDialog.getOpenFileName(self, "Open Age File", "","Age Files(*.age)")
+         inputDir = ageFileName[0].rpartition("/")[0]
          if ageFileName:
            self.txtInputDir.setText(inputDir)
 
-         ageName = ageFileName.rpartition("/")[2]
+         ageName = ageFileName[0].rpartition("/")[2]
          if ageName:
             self.txtOldAgeName.setText(ageName)
 
 
     def setOutputPath(self):
-         outputDirectory = str(QtGui.QFileDialog.getExistingDirectory(self,"Open Directory"))
+         outputDirectory = QFileDialog.getExistingDirectory(self,"Open Directory")
          if outputDirectory:
             self.txtOutputDir.setText(outputDirectory)
 
@@ -84,34 +85,33 @@ class PlasmaTransfusionGUI(QtGui.QMainWindow):
         return None
 
     def saveSettings(self):
-        config = ConfigParser.ConfigParser()
-        config.set('DEFAULT','inputDir',self.txtInputDir.text())
-        config.set('DEFAULT','oldAgeName',self.txtOldAgeName.text())
-        config.set('DEFAULT','outputDir',self.txtOutputDir.text())
-        config.set('DEFAULT','newAgeName',self.txtNewAgeName.text())
-        config.set('DEFAULT','newSequencePrefix',self.txtNewSequencePrefix.text())
-        config.set('DEFAULT','version',self.cbVersion.currentText())
+        config = configparser.ConfigParser()
+        config['DEFAULT']['inputDir'] = self.txtInputDir.text()
+        config['DEFAULT']['oldAgeName'] = self.txtOldAgeName.text()
+        config['DEFAULT']['outputDir'] = self.txtOutputDir.text()
+        config['DEFAULT']['newAgeName'] = self.txtNewAgeName.text()
+        config['DEFAULT']['newSequencePrefix'] = self.txtNewSequencePrefix.text()
+        config['DEFAULT']['version'] = self.cbVersion.currentText()
 
         with open('lastsession.cfg','w') as configfile:
             config.write(configfile)
 
     def readSettings(self):
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         if len(config.read("lastsession.cfg")) > 0:
-            self.txtInputDir.setText(config.get('DEFAULT','inputDir'))
-            self.txtOldAgeName.setText(config.get('DEFAULT','oldAgeName'))
-            self.txtOutputDir.setText(config.get('DEFAULT','outputDir'))
-            self.txtNewAgeName.setText(config.get('DEFAULT','newAgeName'))
-            self.txtNewSequencePrefix.setText(config.get('DEFAULT','newSequencePrefix'))
-            index = self.cbVersion.findText(config.get('DEFAULT','version'))
+            self.txtInputDir.setText(config['DEFAULT']['inputDir'])
+            self.txtOldAgeName.setText(config['DEFAULT']['oldAgeName'])
+            self.txtOutputDir.setText(config['DEFAULT']['outputDir'])
+            self.txtNewAgeName.setText(config['DEFAULT']['newAgeName'])
+            self.txtNewSequencePrefix.setText( config['DEFAULT']['newSequencePrefix'])
+            index = self.cbVersion.findText(config['DEFAULT']['version'])
             self.cbVersion.setCurrentIndex(index)
 
     def main(self):
         self.show()
 
 if __name__=='__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     plasmaTransfusionGUI = PlasmaTransfusionGUI()
     plasmaTransfusionGUI.main()
     app.exec_()
-
