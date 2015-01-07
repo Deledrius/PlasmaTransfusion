@@ -76,7 +76,10 @@ class PlasmaTransfusionGUI(QMainWindow):
 
          if not newAgeName:
             newAgeName = oldAgeName
+         self.setEnabled(False)
+         app.processEvents()
          transfusion.doConvert(oldAgeName, inputDir, newAgeName, outputDir, newSequencePrefix, version)
+         self.setEnabled(True)
 
     def findKeyFromValue(self,dictionary,value):
         for key,v in dictionary.items():
