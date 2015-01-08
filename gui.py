@@ -36,9 +36,9 @@ class PlasmaTransfusionGUI(QMainWindow):
         self.readSettings()
 
     def connectEvents(self):
-         self.btnInputPath.clicked.connect(self.openAgeFile)
-         self.btnOutputPath.clicked.connect(self.setOutputPath)
-         self.btnConvertAge.clicked.connect(self.convertAge)
+        self.btnInputPath.clicked.connect(self.openAgeFile)
+        self.btnOutputPath.clicked.connect(self.setOutputPath)
+        self.btnConvertAge.clicked.connect(self.convertAge)
 
     def fillComboBoxVersions(self):
         userVersionNames = list(transfusion.versionNames.values())
@@ -47,39 +47,39 @@ class PlasmaTransfusionGUI(QMainWindow):
         self.cbVersion.addItems(list(userVersionNames))
 
     def openAgeFile(self):
-         ageFileName = QFileDialog.getOpenFileName(self, "Open Age File", "","Age Files(*.age)")
-         inputDir = ageFileName[0].rpartition("/")[0]
-         if ageFileName:
-           self.txtInputDir.setText(inputDir)
+        ageFileName = QFileDialog.getOpenFileName(self, "Open Age File", "","Age Files(*.age)")
+        inputDir = ageFileName[0].rpartition("/")[0]
+        if ageFileName:
+            self.txtInputDir.setText(inputDir)
 
-         ageName = ageFileName[0].rpartition("/")[2]
-         if ageName:
+        ageName = ageFileName[0].rpartition("/")[2]
+        if ageName:
             self.txtOldAgeName.setText(ageName)
 
 
     def setOutputPath(self):
-         outputDirectory = QFileDialog.getExistingDirectory(self,"Open Directory")
-         if outputDirectory:
+        outputDirectory = QFileDialog.getExistingDirectory(self,"Open Directory")
+        if outputDirectory:
             self.txtOutputDir.setText(outputDirectory)
 
     def convertAge(self):
-         self.saveSettings()
-         inputDir = str(self.txtInputDir.text())
-         oldAgeName = str(self.txtOldAgeName.text())
-         outputDir = str(self.txtOutputDir.text())
-         newAgeName = str(self.txtNewAgeName.text())
-         try:
-             newSequencePrefix = int(self.txtNewSequencePrefix.text())
-         except:
-             newSequencePrefix = None
-         version = self.findKeyFromValue(transfusion.versionNames,self.cbVersion.currentText())
+        self.saveSettings()
+        inputDir = str(self.txtInputDir.text())
+        oldAgeName = str(self.txtOldAgeName.text())
+        outputDir = str(self.txtOutputDir.text())
+        newAgeName = str(self.txtNewAgeName.text())
+        try:
+            newSequencePrefix = int(self.txtNewSequencePrefix.text())
+        except:
+            newSequencePrefix = None
+        version = self.findKeyFromValue(transfusion.versionNames,self.cbVersion.currentText())
 
-         if not newAgeName:
+        if not newAgeName:
             newAgeName = oldAgeName
-         self.setEnabled(False)
-         app.processEvents()
-         transfusion.doConvert(oldAgeName, inputDir, newAgeName, outputDir, newSequencePrefix, version)
-         self.setEnabled(True)
+        self.setEnabled(False)
+        app.processEvents()
+        transfusion.doConvert(oldAgeName, inputDir, newAgeName, outputDir, newSequencePrefix, version)
+        self.setEnabled(True)
 
     def findKeyFromValue(self,dictionary,value):
         for key,v in dictionary.items():
