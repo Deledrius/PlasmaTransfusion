@@ -109,6 +109,7 @@ class PlasmaTransfusionGUI(QMainWindow):
             self.txtNewSequencePrefix.setText( config['DEFAULT']['newSequencePrefix'])
             index = self.cbVersion.findText(config['DEFAULT']['version'])
             self.cbVersion.setCurrentIndex(index)
+            self.btnConvertAge.setFocus()
 
     def main(self):
         self.show()
